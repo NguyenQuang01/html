@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0" />
+    <title>WS OTP Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        padding: 40px;
+        width: 100%;
+        animation: slideUp 0.5s ease-out;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      h2 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 30px;
+        font-size: 28px;
+      }
+
+      p {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        font-size: 16px;
+        color: #555;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      #status {
+        font-weight: bold;
+        color: red;
+        padding: 8px 16px;
+        border-radius: 20px;
+        display: inline-block;
+        margin-left: 10px;
+        transition: all 0.3s ease;
+      }
+
+      button {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        margin-bottom: 25px;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      #otp-messages {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 20px;
+        max-height: 500px;
+        overflow-y: auto;
+        box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+
+      #otp-messages h3 {
+        color: #555;
+        margin-bottom: 15px;
+        font-size: 18px;
+      }
+
+      .otp-item {
+        background: white;
+        padding: 20px;
+        margin-bottom: 15px;
+        border-radius: 10px;
+        border-left: 4px solid #667eea;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        animation: fadeIn 0.3s ease;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 12px 15px;
+        align-items: center;
+      }
+
+      .otp-code {
+        grid-column: 1 / -1;
+        font-size: 32px;
+        font-weight: bold;
+        color: #667eea;
+        background: #f0f3ff;
+        padding: 15px 20px;
+        border-radius: 10px;
+        text-align: center;
+        letter-spacing: 5px;
+        margin-bottom: 10px;
+      }
+
+      .field {
+        display: contents;
+      }
+
+      .field-label {
+        color: #888;
+        font-weight: 600;
+        font-size: 14px;
+        white-space: nowrap;
+      }
+
+      .field-value {
+        color: #333;
+        font-weight: 500;
+        font-size: 14px;
+        font-family: "Courier New", monospace;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateX(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      /* Custom scrollbar */
+      #otp-messages::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      #otp-messages::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+
+      #otp-messages::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+      }
+
+      #otp-messages::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>WebSocket OTP Test</h2>
+
+      <p>Trạng thái: <span id="status">Chưa kết nối</span></p>
+
+      <div id="otp-messages">
+        <h3>📩 OTP Messages:</h3>
+      </div>
+    </div>
+
+    <script>
+      let stompClient = null;
+      connectWS();
+      function connectWS() {
+        const socket = new SockJS("https://be-user-sms-global.smsglobalhub.com/ws");
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect(
+          {},
+          function (frame) {
+            console.log("✅ Connected: " + frame);
+            document.getElementById("status").innerText = "Đã kết nối ✅";
+            document.getElementById("status").style.color = "green";
+
+            // Subscribe vào topic receive-otp
+            stompClient.subscribe("/topic/receive-otp", function (message) {
+              const response = JSON.parse(message.body);
+              const data = response.data || response; // Lấy data từ response.data
+              console.log("📩 OTP Received:", data);
+
+              const div = document.createElement("div");
+              div.className = "otp-item";
+
+              // Tạo HTML với các trường cụ thể
+              let html = "";
+
+              // OTP - nổi bật nhất
+              if (data.otp) {
+                html += `<div class="otp-code">🔐 OTP: ${data.otp}</div>`;
+              }
+
+              // Các trường khác
+              if (data.phoneNumber) {
+                html += `<div class="field"><span class="field-label">📱 Phone:</span><span class="field-value">${data.phoneNumber}</span></div>`;
+              }
+              if (data.serviceCode) {
+                html += `<div class="field"><span class="field-label">🏢 Service:</span><span class="field-value">${data.serviceCode}</span></div>`;
+              }
+              if (data.country) {
+                html += `<div class="field"><span class="field-label">🌍 Country:</span><span class="field-value">${data.country}</span></div>`;
+              }
+
+              div.innerHTML = html;
+              document.getElementById("otp-messages").appendChild(div);
+            });
+          },
+          function (error) {
+            console.error("❌ Lỗi kết nối:", error);
+            document.getElementById("status").innerText = "Kết nối thất bại ❌";
+            document.getElementById("status").style.color = "red";
+          }
+        );
+      }
+    </script>
+  </body>
+</html>
