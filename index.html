@@ -48,35 +48,22 @@
       h2 {
         text-align: center;
         color: #333;
-        margin-bottom: 30px;
+        margin-bottom: 10px;
         font-size: 28px;
       }
 
       p {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        padding: 20px;
         border-radius: 15px;
-        margin-bottom: 20px;
         font-size: 16px;
         color: #555;
         font-weight: 600;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      }
-
-      #status {
-        font-weight: bold;
-        color: red;
-        padding: 8px 16px;
-        border-radius: 20px;
-        display: inline-block;
+        margin-bottom: 10px;
         margin-left: 10px;
-        transition: all 0.3s ease;
       }
 
       button {
         width: 100%;
         padding: 15px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border: none;
         border-radius: 10px;
@@ -84,7 +71,6 @@
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         margin-bottom: 25px;
       }
 
@@ -190,9 +176,10 @@
   </head>
   <body>
     <div class="container">
-      <h2>WebSocket OTP Test</h2>
-
-      <p>Trạng thái: <span id="status">Chưa kết nối</span></p>
+      <div style="display: flex; align-items: center; justify-content: center">
+        <h2>WebSocket OTP Test</h2>
+        <p><span id="status">Chưa kết nối</span></p>
+      </div>
 
       <div id="otp-messages">
         <h3>📩 OTP Messages:</h3>
