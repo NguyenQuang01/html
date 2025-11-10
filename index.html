@@ -177,8 +177,8 @@
   <body>
     <div class="container">
       <div style="display: flex; align-items: center; justify-content: center">
-        <h2>WebSocket OTP Test</h2>
-        <p><span id="status">Chưa kết nối</span></p>
+        <h2>OTP List</h2>
+        <p><span id="status">Not connected</span></p>
       </div>
 
       <div id="otp-messages">
@@ -197,7 +197,7 @@
           {},
           function (frame) {
             console.log("✅ Connected: " + frame);
-            document.getElementById("status").innerText = "Đã kết nối ✅";
+            document.getElementById("status").innerText = "Connected ✅";
             document.getElementById("status").style.color = "green";
 
             // Subscribe vào topic receive-otp
